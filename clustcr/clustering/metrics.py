@@ -13,11 +13,12 @@ class Metrics:
         self.epidata = epidata  # 'ground truth', pd.DataFrame of CDR3 sequences with corresponding epitope specificity (columns=["CDR3", "Epitope"])
 
         # Ensure all values correspond to CDR3s in nodelist and no duplicates remain
-        self.gt = self.epidata[self.epidata["junction_aa"].isin(self.nodelist["junction_aa"])]
+        self.gt = self.epidata[self.epidata["CDR3_beta"].isin(self.nodelist["junction_aa"])]
         self.gt = self.gt.drop_duplicates()
 
         # Construct joint pd.DataFrame that stores information about cluster and epitope association of CDR3s
-        self.gt = pd.merge(left=self.epidata, right=self.nodelist, on="junction_aa")
+        self.epidata['junction_aa'] = self.epidata['CDR3_beta'] + self.epidata['CDR3_alpha']
+        self.gt = pd.merge(left=self.epidata, right=self.nodelist, on="junction_aa").rename(columns={'Epitope': 'epitope'})
 
         # Make a copy and permute cluster assignment column, this provides a baseline for comparison
         self.gt_baseline = self.gt.copy()

@@ -17,13 +17,13 @@ MAX_SAMPLE = 30000
 STEP_SIZE = 100
 
 sample_sizes = range(MIN_SAMPLE,
-                     MAX_SAMPLE,
+                     2000,
                      STEP_SIZE)
 
 
 def main():
     # Import data set with known antigen specificities
-    vdjdb_beta = datasets.vdjdb_beta(epitopes=True)
+    vdjdb = datasets.vdjdb_paired(epitopes=True)
 
     # Initiate output dataframe
     output = pd.DataFrame()
@@ -31,12 +31,13 @@ def main():
     # Perform analysis for different sample sizes
     for s in sample_sizes:
         # Create sample with size s
-        sample = vdjdb_beta.sample(s)
+        sample = vdjdb.sample(s)
+        cdr3, alpha = sample['CDR3_beta'], sample['CDR3_alpha']
 
         # Perform clustering
-        faiss = Clustering(method='faiss').fit(sample.junction_aa)
-        mcl = Clustering(method='mcl').fit(sample.junction_aa)
-        ts = Clustering().fit(sample.junction_aa)
+        faiss = Clustering(method='faiss').fit(cdr3, alpha=sample['CDR3_alpha'])
+        mcl = Clustering(method='mcl').fit(cdr3, alpha=sample['CDR3_alpha'])
+        ts = Clustering().fit(cdr3,  alpha=sample['CDR3_alpha'])
 
         # Evaluate clustering output
         # FAISS

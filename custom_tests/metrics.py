@@ -13,11 +13,11 @@ sns.set_palette('Set1')
 sns.set_context('paper', font_scale=1.3)
 
 MIN_SAMPLE = 1000
-MAX_SAMPLE = 30000
+MAX_SAMPLE = 20000
 STEP_SIZE = 100
 
 sample_sizes = range(MIN_SAMPLE,
-                     2000,
+                     MAX_SAMPLE,
                      STEP_SIZE)
 
 

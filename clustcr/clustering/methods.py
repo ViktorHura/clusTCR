@@ -4,7 +4,7 @@ import markov_clustering as mcl
 import community
 import parmap
 import multiprocessing
-from clustcr.clustering.tools import create_edgelist
+from clustcr.clustering.tools import create_edgelist, create_edgelist_mod
 
 def MCL(cdr3, edgelist=None, mcl_hyper=[1.2, 2], outfile=None):
     """
@@ -128,12 +128,18 @@ def MCL_multiprocessing_from_preclusters(cdr3, preclust, mcl_hyper, n_cpus):
             nodelist[c]['cluster'] += nodelist[c - 1]['cluster'].max() + 1
     return pd.concat(nodelist, ignore_index=True)
 
-def MCL_from_preclusters(cdr3, preclust, mcl_hyper):
+
+def MCL_from_preclusters(cdr3, preclust, mcl_hyper, cdr3_extended=None, model=None):
     initiate = True
     nodelist = pd.DataFrame(columns=["junction_aa", "cluster"])
+
     for c in preclust.cluster_contents():
         try:
-            edges = create_edgelist(c)
+            if cdr3_extended is None:
+                edges = create_edgelist(c)
+            else:
+                edges = create_edgelist_mod(c, cdr3_extended, model)
+
             if initiate:
                 nodes = MCL(cdr3, edges, mcl_hyper=mcl_hyper)
                 nodelist = pd.concat([nodelist,nodes],ignore_index=True)
@@ -152,6 +158,7 @@ def MCL_from_preclusters(cdr3, preclust, mcl_hyper):
                 cluster = pd.DataFrame({"junction_aa": c, "cluster": [0] * len(c)})
                 nodelist = nodelist.append(cluster)
     return nodelist
+
 
 def louvain_multiprocessing_from_preclusters(cdr3, preclust, n_cpus):
     """

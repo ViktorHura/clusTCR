@@ -124,34 +124,3 @@ def encode_data(data_loader, model, device):
             encodings += output.tolist()
 
     return encodings
-
-
-def encodeSequence(sequence, seqA, aa_keys, max_sequence_length):
-    mat = np.array([aa_keys.loc[aa] for aa in sequence])
-    padding = np.zeros((max_sequence_length - mat.shape[0], mat.shape[1]))
-    mat = np.append(mat, padding, axis=0)
-    mat = np.transpose(mat)
-
-    mat2 = np.array([aa_keys.loc[aa] for aa in seqA])
-    padding = np.zeros((max_sequence_length - mat2.shape[0], mat2.shape[1]))
-    mat2 = np.append(mat2, padding, axis=0)
-    mat2 = np.transpose(mat2)
-
-    matstack = np.stack([mat, mat2])
-    matstack = torch.from_numpy(matstack)
-    return torch.reshape(matstack, (matstack.size(dim=1), 2, matstack.size(dim=2)))
-
-
-class TestDataset(Dataset):
-    def __init__(self, sequences, AA_keys_path, max_sequence_length):
-        self.aa_keys = pd.read_csv(AA_keys_path, index_col='One Letter')
-        self.sequences = []
-        self.max_sequence_length = max_sequence_length
-        for seq, seqA in sequences.to_records(index=False):
-            self.sequences.append(encodeSequence(seq, seqA, self.aa_keys, self.max_sequence_length))
-
-    def __len__(self):
-        return len(self.sequences)
-
-    def __getitem__(self, idx):
-        return self.sequences[idx]

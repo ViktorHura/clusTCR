@@ -121,7 +121,8 @@ class Clustering:
         available = ["MCL",
                      "FAISS",
                      "TWO-STEP",
-                     "RANDOM"]
+                     "RANDOM",
+                     "TWO-STEP-MOD"]
         assert self.method in available, f"Method not available, please choose one of the following methods:\n {available}"
 
     def _set_n_cpus(self, n_cpus):
@@ -241,6 +242,19 @@ class Clustering:
                     )
             else:
                 raise ClusTCRError(f"Unknown method: {self.second_pass}")
+
+    def _twostep_mod(self, cdr3, cdr3_extended, model) -> ClusteringResult:
+        # Multiprocessing
+        super_clusters = self._faiss(cdr3)
+
+        if self.second_pass == "MCL":
+            return ClusteringResult(
+                MCL_from_preclusters(
+                    cdr3, super_clusters, self.mcl_params, cdr3_extended=cdr3_extended, model=model
+                    )
+                )
+        else:
+            raise ClusTCRError(f"Unknown method: {self.second_pass}")
         
     def _get_v_family(self, data: pd.DataFrame, v_gene_col : str):
         """
@@ -390,7 +404,8 @@ class Clustering:
             include_vgene = False, 
             cdr3_col: str = None, 
             v_gene_col: str = None, 
-            alpha: pd.Series = None
+            alpha: pd.Series = None,
+            model = None,
             ) -> ClusteringResult:
         """
         Function that calls the indicated clustering method and returns clusters in a ClusteringResult
@@ -402,9 +417,10 @@ class Clustering:
                 data = pd.Series(data)
             except ValueError:
                 raise ClusTCRError("Wrong input. Please provide an iterable object containing CDR3 amino acid sequences.")
-        if alpha is not None:
+        if alpha is not None and self.method != 'TWO-STEP-MOD':
             assert len(data) == len(alpha), 'amount of CDR3 data is not equal to amount of alpha chain data'
             data = data.add(alpha)
+
         if self.method == 'MCL':
             print("Clustering using MCL approach.")
             return ClusteringResult(
@@ -417,6 +433,9 @@ class Clustering:
             return self._faiss(data)
         elif self.method == 'RANDOM':
             return self._random(data)
+        elif self.method == 'TWO-STEP-MOD':
+            print("Clustering %s TCRs using modified two-step approach." % (len(data)))
+            return self._twostep_mod(data.add(alpha), pd.concat([data.add(alpha), data, alpha], axis=1), model)
         else:
             print("Clustering %s TCRs using two-step approach." % (len(data)))
             return self._twostep(data)

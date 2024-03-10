@@ -96,6 +96,8 @@ def main():
     plot_distances(sim, dsim, n_bins, scale)
     plt.show()
 
+    #1.23
+
 
 if __name__ == "__main__":
     main()

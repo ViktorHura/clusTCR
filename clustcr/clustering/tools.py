@@ -35,6 +35,7 @@ def create_edgelist(cdr3, filename=None):
 
     return edgelist
 
+from scipy.spatial import KDTree
 
 def create_edgelist_mod(cdr3, extended, model):
     '''
@@ -46,24 +47,17 @@ def create_edgelist_mod(cdr3, extended, model):
     data = pd.DataFrame(data=cdr3)
     dat = pd.merge(data, extended, on=0, how='inner').drop_duplicates()
 
-    # Hashing
-    cdr3hash = dict()
-    for cdr in cdr3:
-        for hash in (cdr[::2], cdr[1::2]):
-            if hash not in cdr3hash:
-                cdr3hash[hash] = set()
-            cdr3hash[hash].add(cdr)
+    encodings = model(dat[['CDR3_beta', 'CDR3_alpha']])
 
-    # Generate network
+    tree = KDTree(data=encodings)
+
+    pairs = tree.query_pairs(1.23, p=2)
+
     edgelist = set()
-    for hash in cdr3hash:
-        if len(cdr3hash[hash]) >= 1:
-            for cdr1 in cdr3hash[hash]:
-                for cdr2 in cdr3hash[hash]:
-                    if cdr1 != cdr2:
-                        if cdr1 <= cdr2:
-                            if sum(ch1 != ch2 for ch1, ch2 in zip(cdr1, cdr2)) == 1:
-                                edgelist.add(cdr1 + "\t" + cdr2)
+    for idx1, idx2 in pairs:
+        cdr1 = dat[0].iloc[idx1]
+        cdr2 = dat[0].iloc[idx2]
+        edgelist.add(cdr1 + "\t" + cdr2)
 
     return edgelist
 

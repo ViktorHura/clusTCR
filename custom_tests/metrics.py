@@ -46,7 +46,7 @@ def main():
     # Perform analysis for different sample sizes
     for s in sample_sizes:
         # Create sample with size s
-        sample = vdjdb.sample(s)
+        sample = vdjdb.sample(s, random_state=42)
         cdr3, alpha = sample['CDR3_beta'], sample['CDR3_alpha']
 
         # Perform clustering
@@ -174,7 +174,7 @@ def main():
     ax4.text(-0.25, 1.50, 'D', transform=ax4.transAxes, fontsize=20, fontweight='bold', va='top', ha='right')
     ax5.text(-0.1, 1.50, 'E', transform=ax5.transAxes, fontsize=20, fontweight='bold', va='top', ha='right')
 
-    fig.savefig('clustcr_step_evaluation.png', format='png', bbox_inches='tight')
+    fig.savefig('clustcr_step_evaluation-0.225.png', format='png', bbox_inches='tight')
 
     print(test_func())
 

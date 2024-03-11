@@ -80,13 +80,16 @@ def main():
     vdjdb = datasets.vdjdb_paired(epitopes=True).sample(n=1000, random_state=42)
     out = partial_func(vdjdb[['CDR3_beta', 'CDR3_alpha']])
     vdjdb.insert(0, 'Encoding', out)
-    vdjdb.drop(columns=['CDR3_alpha', 'CDR3_beta'], inplace=True)
+    vdjdb['combined'] = vdjdb['CDR3_alpha'] + vdjdb['CDR3_beta']
+    #vdjdb.drop(columns=['CDR3_alpha', 'CDR3_beta'], inplace=True)
 
     pairs = vdjdb.merge(vdjdb, how='cross')
     pairs = pairs.query("(Encoding_x > Encoding_y)")
 
     pairs['Distance'] = pairs.swifter.apply(lambda x: distance.euclidean(x['Encoding_x'], x['Encoding_y']), axis=1)
     pairs.drop(columns=['Encoding_x', 'Encoding_y'], inplace=True)
+
+    pairs['HD'] = pairs.swifter.apply(lambda x: distance.hamming([*x['combined_x']], [*x['combined_y']]) if len(x['combined_x']) == len(x['combined_y']) else -0.1, axis=1)
 
     sim = pairs[pairs['Epitope_x'] == pairs['Epitope_y']]['Distance'].to_list()
     dsim = pairs[pairs['Epitope_x'] != pairs['Epitope_y']]['Distance'].to_list()
@@ -96,8 +99,13 @@ def main():
     plot_distances(sim, dsim, n_bins, scale)
     plt.show()
 
-    #1.23
-    #0.18
+    sim = pairs[pairs['Epitope_x'] == pairs['Epitope_y']]['HD'].to_list()
+    dsim = pairs[pairs['Epitope_x'] != pairs['Epitope_y']]['HD'].to_list()
+
+    n_bins = 11
+    scale = (-0.1, pairs['HD'].max())
+    plot_distances(sim, dsim, n_bins, scale)
+    plt.show()
 
 
 if __name__ == "__main__":

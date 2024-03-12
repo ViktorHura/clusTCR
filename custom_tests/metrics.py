@@ -15,7 +15,7 @@ sns.set_context('paper', font_scale=1.3)
 
 MIN_SAMPLE = 1000
 MAX_SAMPLE = 20000
-STEP_SIZE = 5000
+STEP_SIZE = 500
 
 sample_sizes = range(MIN_SAMPLE,
                      MAX_SAMPLE,
@@ -52,6 +52,7 @@ def main():
         # Perform clustering
         # faiss = Clustering(method='faiss').fit(cdr3, alpha=sample['CDR3_alpha'])
         # mcl = Clustering(method='mcl').fit(cdr3, alpha=sample['CDR3_alpha'])
+        t0 = time.time()
         ts = Clustering().fit(cdr3,  alpha=sample['CDR3_alpha'])
 
         # Evaluate clustering output
@@ -72,7 +73,6 @@ def main():
         # mcl_out['t'] = t
         # output = output._append(mcl_out)
         # Two-step (ClusTCR)
-        t0 = time.time()
         ts_out = ts.metrics(sample).summary()
         t = time.time() - t0
         ts_out['method'] = 'Two-step'
@@ -80,14 +80,14 @@ def main():
         ts_out['t'] = t
         output = output._append(ts_out)
 
+        t1 = time.time()
         ts2 = Clustering(method='two-step-mod').fit(cdr3, alpha=sample['CDR3_alpha'], model=partial_func)
         # Two-step (ClusTCR)
-        t0 = time.time()
         ts2_out = ts2.metrics(sample).summary()
-        t = time.time() - t0
+        t2 = time.time() - t1
         ts2_out['method'] = 'Two-step-modified'
         ts2_out['n'] = s
-        ts2_out['t'] = t
+        ts2_out['t'] = t2
         output = output._append(ts2_out)
 
     # Write output to file
@@ -174,7 +174,7 @@ def main():
     ax4.text(-0.25, 1.50, 'D', transform=ax4.transAxes, fontsize=20, fontweight='bold', va='top', ha='right')
     ax5.text(-0.1, 1.50, 'E', transform=ax5.transAxes, fontsize=20, fontweight='bold', va='top', ha='right')
 
-    fig.savefig('clustcr_step_evaluation-0.33.png', format='png', bbox_inches='tight')
+    fig.savefig('clustcr_step_evaluation-0.00.png', format='png', bbox_inches='tight')
 
     print(test_func())
 

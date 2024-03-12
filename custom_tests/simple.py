@@ -7,7 +7,7 @@ import pandas as pd
 from functools import partial
 
 from clustcr import test_func
-# from modelBYOL import SiameseNetworkBYOL as SiameseNetwork, encode_data
+#from modelBYOL import SiameseNetworkBYOL as SiameseNetwork, encode_data
 from modelContrastive import SiameseNetworkContrastive as SiameseNetwork, encode_data
 from clustcr import datasets
 import swifter

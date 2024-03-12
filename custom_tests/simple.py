@@ -7,7 +7,8 @@ import pandas as pd
 from functools import partial
 
 from clustcr import test_func
-from modelBYOL import SiameseNetworkBYOL as SiameseNetwork, encode_data
+# from modelBYOL import SiameseNetworkBYOL as SiameseNetwork, encode_data
+from modelContrastive import SiameseNetworkContrastive as SiameseNetwork, encode_data
 from clustcr import datasets
 import swifter
 from scipy.spatial import distance
@@ -66,13 +67,14 @@ def main():
 
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     model = SiameseNetwork(input_size).to(device)
-    model.load_state_dict(torch.load('model.pt'))
+    model.load_state_dict(torch.load('model_ct2.pt'))
     model.eval()
 
     # import torchinfo
     # s = torchinfo.summary(model, [input_size, input_size], batch_dim=0,
     #                   col_names=('input_size', 'output_size', 'num_params', 'kernel_size', 'mult_adds'), verbose=0)
     # print(s)
+
 
     aa_keys = pd.read_csv('AA_keys.csv', index_col='One Letter')
     partial_func = partial(encode_func, keys=aa_keys, model=model, device=device)

@@ -23,8 +23,8 @@ sample_sizes = range(MIN_SAMPLE,
 
 
 import torch
-from simple import encode_func
-from modelBYOL import SiameseNetworkBYOL as SiameseNetwork
+from simple import encode_func, SiameseNetwork
+
 
 def main():
     # Import data set with known antigen specificities
@@ -34,7 +34,7 @@ def main():
 
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     model = SiameseNetwork(input_size).to(device)
-    model.load_state_dict(torch.load('model.pt'))
+    model.load_state_dict(torch.load('model_ct2.pt'))
     model.eval()
 
     aa_keys = pd.read_csv('AA_keys.csv', index_col='One Letter')
@@ -174,7 +174,7 @@ def main():
     ax4.text(-0.25, 1.50, 'D', transform=ax4.transAxes, fontsize=20, fontweight='bold', va='top', ha='right')
     ax5.text(-0.1, 1.50, 'E', transform=ax5.transAxes, fontsize=20, fontweight='bold', va='top', ha='right')
 
-    fig.savefig('clustcr_step_evaluation-0.225.png', format='png', bbox_inches='tight')
+    fig.savefig('clustcr_step_evaluation-0.33.png', format='png', bbox_inches='tight')
 
     print(test_func())
 

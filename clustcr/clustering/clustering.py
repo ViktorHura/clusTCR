@@ -191,7 +191,7 @@ class Clustering:
 
         return ClusteringResult(pd.DataFrame(clusters))
 
-    def _twostep(self, cdr3) -> ClusteringResult:
+    def _twostep(self, cdr3, metric=None) -> ClusteringResult:
         """
         Two-step clustering procedure for speeding up CDR3 clustering by
         pre-sorting sequences into superclusters. A second clustering step
@@ -231,7 +231,7 @@ class Clustering:
             if self.second_pass == "MCL":
                 return ClusteringResult(
                     MCL_from_preclusters(
-                        cdr3, super_clusters, self.mcl_params
+                        cdr3, super_clusters, self.mcl_params, metric=metric
                         )
                     )
             elif self.second_pass == "LOUVAIN":
@@ -244,7 +244,6 @@ class Clustering:
                 raise ClusTCRError(f"Unknown method: {self.second_pass}")
 
     def _twostep_mod(self, cdr3, cdr3_extended, model) -> ClusteringResult:
-        # Multiprocessing
         super_clusters = self._faiss(cdr3)
 
         if self.second_pass == "MCL":
@@ -406,6 +405,7 @@ class Clustering:
             v_gene_col: str = None, 
             alpha: pd.Series = None,
             model = None,
+            metric = None,
             ) -> ClusteringResult:
         """
         Function that calls the indicated clustering method and returns clusters in a ClusteringResult
@@ -438,4 +438,4 @@ class Clustering:
             return self._twostep_mod(data.add(alpha), pd.concat([data.add(alpha), data, alpha], axis=1), model)
         else:
             print("Clustering %s TCRs using two-step approach." % (len(data)))
-            return self._twostep(data)
+            return self._twostep(data, metric=metric)

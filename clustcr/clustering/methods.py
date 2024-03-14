@@ -129,14 +129,14 @@ def MCL_multiprocessing_from_preclusters(cdr3, preclust, mcl_hyper, n_cpus):
     return pd.concat(nodelist, ignore_index=True)
 
 
-def MCL_from_preclusters(cdr3, preclust, mcl_hyper, cdr3_extended=None, model=None):
+def MCL_from_preclusters(cdr3, preclust, mcl_hyper, cdr3_extended=None, model=None, metric=None):
     initiate = True
     nodelist = pd.DataFrame(columns=["junction_aa", "cluster"])
 
     for c in preclust.cluster_contents():
         try:
             if cdr3_extended is None:
-                edges = create_edgelist(c)
+                edges = create_edgelist(c, metric=metric)
             else:
                 edges = create_edgelist_mod(c, cdr3_extended, model)
 

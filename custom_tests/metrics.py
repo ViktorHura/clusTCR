@@ -15,11 +15,11 @@ sns.set_context('paper', font_scale=1.3)
 
 MIN_SAMPLE = 1000
 MAX_SAMPLE = 20000
-STEP_SIZE = 500
+STEP_SIZE = 1000
 
-sample_sizes = range(MIN_SAMPLE,
+sample_sizes = [x for x in range(MIN_SAMPLE,
                      MAX_SAMPLE,
-                     STEP_SIZE)
+                     STEP_SIZE)] + [MAX_SAMPLE]
 
 
 import torch
@@ -50,32 +50,20 @@ def main():
         cdr3, alpha = sample['CDR3_beta'], sample['CDR3_alpha']
 
         # Perform clustering
-        # faiss = Clustering(method='faiss').fit(cdr3, alpha=sample['CDR3_alpha'])
-        # mcl = Clustering(method='mcl').fit(cdr3, alpha=sample['CDR3_alpha'])
-        t0 = time.time()
-        ts = Clustering().fit(cdr3,  alpha=sample['CDR3_alpha'])
+        t3 = time.time()
+        ts3 = Clustering().fit(cdr3, alpha=sample['CDR3_alpha'], metric='levenshtein')
+        ts3_out = ts3.metrics(sample).summary()
+        t3 = time.time() - t3
+        ts3_out['method'] = 'Blosum62'
+        ts3_out['n'] = s
+        ts3_out['t'] = t3
+        output = output._append(ts3_out)
 
-        # Evaluate clustering output
-        # # FAISS
-        # t0 = time.time()
-        # faiss_out = faiss.metrics(sample).summary()
-        # t = time.time() - t0
-        # faiss_out['method'] = 'Faiss'
-        # faiss_out['n'] = s
-        # faiss_out['t'] = t
-        # output = output._append(faiss_out)
-        # # MCL
-        # t0 = time.time()
-        # mcl_out = mcl.metrics(sample).summary()
-        # t = time.time() - t0
-        # mcl_out['method'] = 'MCL'
-        # mcl_out['n'] = s
-        # mcl_out['t'] = t
-        # output = output._append(mcl_out)
-        # Two-step (ClusTCR)
+        t0 = time.time()
+        ts = Clustering().fit(cdr3, alpha=sample['CDR3_alpha'])
         ts_out = ts.metrics(sample).summary()
         t = time.time() - t0
-        ts_out['method'] = 'Two-step'
+        ts_out['method'] = 'Default'
         ts_out['n'] = s
         ts_out['t'] = t
         output = output._append(ts_out)
@@ -85,7 +73,7 @@ def main():
         # Two-step (ClusTCR)
         ts2_out = ts2.metrics(sample).summary()
         t2 = time.time() - t1
-        ts2_out['method'] = 'Two-step-modified'
+        ts2_out['method'] = 'Siamese'
         ts2_out['n'] = s
         ts2_out['t'] = t2
         output = output._append(ts2_out)
@@ -112,53 +100,53 @@ def main():
     ax5 = fig.add_subplot(gs[2, :])
 
     x = data.n.unique()
-    #ax1.plot(x, retent[retent['method'] == 'Faiss'].actual, color=colors[0], label='Faiss')
-    #ax1.plot(x, retent[retent['method'] == 'MCL'].actual, color=colors[1], label='MCL')
-    ax1.plot(x, retent[retent['method'] == 'Two-step'].actual, color=colors[2], label='Two-step')
-    ax1.plot(x, retent[retent['method'] == 'Two-step-modified'].actual, color=colors[3], label='Two-step-modified')
+
+    ax1.plot(x, retent[retent['method'] == 'Default'].actual, color=colors[2], label='Default')
+    ax1.plot(x, retent[retent['method'] == 'Siamese'].actual, color=colors[3], label='Siamese')
+    ax1.plot(x, retent[retent['method'] == 'Blosum62'].actual, color=colors[4], label='Blosum62')
     ax1.set_ylabel('Retention')
 
-    #ax2.plot(x, purity[purity['method'] == 'Faiss'].actual, color=colors[0], label='Faiss')
-    #ax2.plot(x, purity[purity['method'] == 'MCL'].actual, color=colors[1], label='MCL')
-    ax2.plot(x, purity[purity['method'] == 'Two-step'].actual, color=colors[2], label='Two-step')
-    ax2.plot(x, purity[purity['method'] == 'Two-step-modified'].actual, color=colors[3], label='Two-step-modified')
-    #ax2.plot(x, purity[purity['method'] == 'Faiss'].baseline, color=colors[0], ls='--', lw=.5, label='Faiss - permuted')
-    #ax2.plot(x, purity[purity['method'] == 'MCL'].baseline, color=colors[1], ls='--', lw=.5, label='MCL - permuted')
-    ax2.plot(x, purity[purity['method'] == 'Two-step'].baseline, color=colors[2], ls='--', lw=.5,
-             label='Two-step - permuted')
-    ax2.plot(x, purity[purity['method'] == 'Two-step-modified'].baseline, color=colors[3], ls='--', lw=.5,
-             label='Two-step-modified - permuted')
+
+    ax2.plot(x, purity[purity['method'] == 'Default'].actual, color=colors[2], label='Default')
+    ax2.plot(x, purity[purity['method'] == 'Siamese'].actual, color=colors[3], label='Siamese')
+    ax2.plot(x, purity[purity['method'] == 'Blosum62'].actual, color=colors[4], label='Blosum62')
+
+    ax2.plot(x, purity[purity['method'] == 'Default'].baseline, color=colors[2], ls='--', lw=.5,
+             label='Default - permuted')
+    ax2.plot(x, purity[purity['method'] == 'Siamese'].baseline, color=colors[3], ls='--', lw=.5,
+             label='Siamese - permuted')
+    ax2.plot(x, purity[purity['method'] == 'Blosum62'].baseline, color=colors[4], ls='--', lw=.5,
+             label='Blosum62 - permuted')
     ax2.set_ylabel('Purity')
 
-    #ax3.plot(x, pur_90[pur_90['method'] == 'Faiss'].actual, color=colors[0], label='Faiss')
-    #ax3.plot(x, pur_90[pur_90['method'] == 'MCL'].actual, color=colors[1], label='MCL')
-    ax3.plot(x, pur_90[pur_90['method'] == 'Two-step'].actual, color=colors[2], label='Two-step')
-    ax3.plot(x, pur_90[pur_90['method'] == 'Two-step-modified'].actual, color=colors[3], label='Two-step-modified')
-    #ax3.plot(x, pur_90[pur_90['method'] == 'Faiss'].baseline, color=colors[0], ls='--', lw=.5, label='Faiss - permuted')
-    #ax3.plot(x, pur_90[pur_90['method'] == 'MCL'].baseline, color=colors[1], ls='--', lw=.5, label='MCL - permuted')
-    ax3.plot(x, pur_90[pur_90['method'] == 'Two-step'].baseline, color=colors[2], ls='--', lw=.5,
-             label='Two-step - permuted')
-    ax3.plot(x, pur_90[pur_90['method'] == 'Two-step-modified'].baseline, color=colors[3], ls='--', lw=.5,
-             label='Two-step-modified - permuted')
+
+    ax3.plot(x, pur_90[pur_90['method'] == 'Default'].actual, color=colors[2], label='Default')
+    ax3.plot(x, pur_90[pur_90['method'] == 'Siamese'].actual, color=colors[3], label='Siamese')
+    ax3.plot(x, pur_90[pur_90['method'] == 'Blosum62'].actual, color=colors[4], label='Blosum62')
+    ax3.plot(x, pur_90[pur_90['method'] == 'Default'].baseline, color=colors[2], ls='--', lw=.5,
+             label='Default - permuted')
+    ax3.plot(x, pur_90[pur_90['method'] == 'Siamese'].baseline, color=colors[3], ls='--', lw=.5,
+             label='Siamese - permuted')
+    ax3.plot(x, pur_90[pur_90['method'] == 'Blosum62'].baseline, color=colors[4], ls='--', lw=.5,
+             label='Blosum62 - permuted')
     ax3.set_ylabel(r'$f_{purity > 0.90}$')
 
-    #ax4.plot(x, consist[consist['method'] == 'Faiss'].actual, color=colors[0], label='Faiss')
-    #ax4.plot(x, consist[consist['method'] == 'MCL'].actual, color=colors[1], label='MCL')
-    ax4.plot(x, consist[consist['method'] == 'Two-step'].actual, color=colors[2], label='Two-step')
-    ax4.plot(x, consist[consist['method'] == 'Two-step-modified'].actual, color=colors[3], label='Two-step-modified')
-    #ax4.plot(x, consist[consist['method'] == 'Faiss'].baseline, color=colors[0], ls='--', lw=.5,
-             #label='Faiss - permuted')
-    #ax4.plot(x, consist[consist['method'] == 'MCL'].baseline, color=colors[1], ls='--', lw=.5, label='MCL - permuted')
-    ax4.plot(x, consist[consist['method'] == 'Two-step'].baseline, color=colors[2], ls='--', lw=.5,
-             label='Two-step - permuted')
-    ax4.plot(x, consist[consist['method'] == 'Two-step-modified'].baseline, color=colors[3], ls='--', lw=.5,
-             label='Two-step-modified - permuted')
+
+    ax4.plot(x, consist[consist['method'] == 'Default'].actual, color=colors[2], label='Default')
+    ax4.plot(x, consist[consist['method'] == 'Siamese'].actual, color=colors[3], label='Siamese')
+    ax4.plot(x, consist[consist['method'] == 'Blosum62'].actual, color=colors[4], label='Blosum62')
+    ax4.plot(x, consist[consist['method'] == 'Default'].baseline, color=colors[2], ls='--', lw=.5,
+             label='Default - permuted')
+    ax4.plot(x, consist[consist['method'] == 'Siamese'].baseline, color=colors[3], ls='--', lw=.5,
+             label='Siamese - permuted')
+    ax4.plot(x, consist[consist['method'] == 'Blosum62'].baseline, color=colors[4], ls='--', lw=.5,
+             label='Blosum62 - permuted')
     ax4.set_ylabel('Consistency')
 
-    #ax5.plot(x, consist[consist['method'] == 'Faiss'].t, color=colors[0], label='Faiss')
-    #ax5.plot(x, consist[consist['method'] == 'MCL'].t, color=colors[1], label='MCL')
-    ax5.plot(x, consist[consist['method'] == 'Two-step'].t, color=colors[2], label='Two-step')
-    ax5.plot(x, consist[consist['method'] == 'Two-step-modified'].t, color=colors[3], label='Two-step-modified')
+
+    ax5.plot(x, consist[consist['method'] == 'Default'].t, color=colors[2], label='Default')
+    ax5.plot(x, consist[consist['method'] == 'Siamese'].t, color=colors[3], label='Siamese')
+    ax5.plot(x, consist[consist['method'] == 'Blosum62'].t, color=colors[4], label='Blosum62')
     ax5.set_ylabel('t (seconds)')
     ax5.set_xlabel('n sequences')
 
@@ -166,7 +154,7 @@ def main():
 
     handles, labels = ax2.get_legend_handles_labels()
     fig.legend(handles, labels, loc='center right',
-               bbox_to_anchor=(1.35, 0.6))
+               bbox_to_anchor=(1.40, 0.6))
 
     ax1.text(-0.25, 1.50, 'A', transform=ax1.transAxes, fontsize=20, fontweight='bold', va='top', ha='right')
     ax2.text(-0.25, 1.50, 'B', transform=ax2.transAxes, fontsize=20, fontweight='bold', va='top', ha='right')

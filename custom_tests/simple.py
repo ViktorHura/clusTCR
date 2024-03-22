@@ -91,6 +91,7 @@ def main():
     pairs['Distance'] = pairs.swifter.apply(lambda x: distance.euclidean(x['Encoding_x'], x['Encoding_y']), axis=1)
     pairs.drop(columns=['Encoding_x', 'Encoding_y'], inplace=True)
 
+    #very wrong
     pairs['HD'] = pairs.swifter.apply(lambda x: distance.hamming([*x['combined_x']], [*x['combined_y']]) if len(x['combined_x']) == len(x['combined_y']) else -0.1, axis=1)
 
     sim = pairs[pairs['Epitope_x'] == pairs['Epitope_y']]['Distance'].to_list()

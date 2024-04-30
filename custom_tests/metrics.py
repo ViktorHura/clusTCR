@@ -13,9 +13,9 @@ plt.rc('font', family='serif')
 sns.set_palette('Set1')
 sns.set_context('paper', font_scale=1.3)
 
-MIN_SAMPLE = 1000
-MAX_SAMPLE = 8000
-STEP_SIZE = 1000
+MIN_SAMPLE = 500
+MAX_SAMPLE = 2200
+STEP_SIZE = 100
 
 sample_sizes = [x for x in range(MIN_SAMPLE,
                      MAX_SAMPLE,
@@ -40,7 +40,7 @@ def main():
 
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     model = SiameseNetwork(input_size).to(device)
-    model.load_state_dict(torch.load('model_0.pt'))
+    model.load_state_dict(torch.load('model_7.pt'))
     model.eval()
 
     aa_keys = pd.read_csv('AA_keys.csv', index_col='One Letter')
@@ -168,7 +168,7 @@ def main():
     ax4.text(-0.25, 1.50, 'D', transform=ax4.transAxes, fontsize=20, fontweight='bold', va='top', ha='right')
     ax5.text(-0.1, 1.50, 'E', transform=ax5.transAxes, fontsize=20, fontweight='bold', va='top', ha='right')
 
-    fig.savefig('clustcr_step_evaluation-0.0035.png', format='png', bbox_inches='tight')
+    fig.savefig('clustcr_step_evaluation-0.1.png', format='png', bbox_inches='tight')
 
     print(test_func())
 

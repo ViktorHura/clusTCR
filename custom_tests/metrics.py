@@ -14,7 +14,7 @@ sns.set_palette('Set1')
 sns.set_context('paper', font_scale=1.3)
 
 MIN_SAMPLE = 1000
-MAX_SAMPLE = 20000
+MAX_SAMPLE = 8000
 STEP_SIZE = 1000
 
 sample_sizes = [x for x in range(MIN_SAMPLE,
@@ -28,13 +28,19 @@ from simple import encode_func, SiameseNetwork
 
 def main():
     # Import data set with known antigen specificities
-    vdjdb = datasets.vdjdb_paired(epitopes=True)
+    #vdjdb = datasets.vdjdb_paired(epitopes=True)
+    d2 = pd.read_csv('test.csv')
+    d2 = d2[['CDR3a_extended', 'CDR3b_extended', 'Peptide']]
+    vdjdb = d2.rename(columns={'CDR3a_extended': 'CDR3_alpha',
+                       'CDR3b_extended': 'CDR3_beta',
+                       'Peptide': 'Epitope'
+                       })
 
-    input_size = (31, 2, 25)
+    input_size = (31, 2, 26)
 
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     model = SiameseNetwork(input_size).to(device)
-    model.load_state_dict(torch.load('model_ct2.pt'))
+    model.load_state_dict(torch.load('model_0.pt'))
     model.eval()
 
     aa_keys = pd.read_csv('AA_keys.csv', index_col='One Letter')
@@ -162,7 +168,7 @@ def main():
     ax4.text(-0.25, 1.50, 'D', transform=ax4.transAxes, fontsize=20, fontweight='bold', va='top', ha='right')
     ax5.text(-0.1, 1.50, 'E', transform=ax5.transAxes, fontsize=20, fontweight='bold', va='top', ha='right')
 
-    fig.savefig('clustcr_step_evaluation-0.00.png', format='png', bbox_inches='tight')
+    fig.savefig('clustcr_step_evaluation-0.0035.png', format='png', bbox_inches='tight')
 
     print(test_func())
 

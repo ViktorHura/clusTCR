@@ -70,12 +70,6 @@ def main():
     model.load_state_dict(torch.load('model_ct2.pt'))
     model.eval()
 
-    # import torchinfo
-    # s = torchinfo.summary(model, [input_size, input_size], batch_dim=0,
-    #                   col_names=('input_size', 'output_size', 'num_params', 'kernel_size', 'mult_adds'), verbose=0)
-    # print(s)
-
-
     aa_keys = pd.read_csv('AA_keys.csv', index_col='One Letter')
     partial_func = partial(encode_func, keys=aa_keys, model=model, device=device)
 

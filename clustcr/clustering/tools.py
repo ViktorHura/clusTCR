@@ -66,7 +66,7 @@ def create_edgelist_mod(cdr3, extended, model):
 
     tree = KDTree(data=encodings)
 
-    pairs = tree.query_pairs(0.00, p=2)
+    pairs = tree.query_pairs(0.0035  , p=2)
 
     edgelist = set()
     for idx1, idx2 in pairs:
